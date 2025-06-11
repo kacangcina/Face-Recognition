@@ -1,0 +1,279 @@
+<!-- templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Face Recognition</title>
+  <style>
+    /* CSS Internal: bisa juga dipindah ke file eksternal, 
+       tapi di sini kita tulis langsung untuk kemudahan contoh. */
+
+    /* Reset dasar */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      color: #111;
+      padding: 20px;
+    }
+
+    /* Judul utama */
+    h1 {
+      font-size: 48px;
+      font-weight: 600;
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    h1::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 4px;
+      background-color: #111;
+      margin-top: 6px;
+    }
+
+    /* Kontainer utama: tiga kolom */
+    .main-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    /* Kolom Kiri: Form Upload + Hasil teks */
+    .left-column {
+      flex: 1;
+      max-width: 25%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .form-group input[type="file"] {
+      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 24px;
+      border: none;
+      background-color: #1d8cf8;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .result-group {
+      margin-top: 20px;
+    }
+    .result-group label {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .result-group .result-value {
+      font-size: 24px;
+      color: #6dff91; /* hijau terang */
+      font-weight: 500;
+    }
+
+    /* Kolom Tengah: Test Images + Running Time */
+    .middle-column {
+      flex: 1;
+      max-width: 35%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 20px;
+    }
+    .middle-column .column-title {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    /* Placeholder kotak abu-abu—menjadi parent container <img> */
+    .placeholder-box {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      height: 300px;
+      background-color: #d8d8d8;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .placeholder-box img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* Supaya gambar tidak terdistorsi */
+    }
+
+    .running-time-group {
+      margin-top: 20px;
+      align-self: flex-start;
+    }
+    .running-time-group label {
+      font-size: 20px;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .running-time-group .time-value {
+      font-size: 24px;
+      color: #6dff91;
+      font-weight: 500;
+    }
+
+    /* Kolom Kanan: Closest Result */
+    .right-column {
+      flex: 1;
+      max-width: 35%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .right-column .column-title {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .right-column .placeholder-box {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      height: 300px;
+      background-color: #d8d8d8;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .right-column .placeholder-box img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Responsif: layar ≤ 900px → tumpuk kolom */
+    @media screen and (max-width: 900px) {
+      .main-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .left-column,
+      .middle-column,
+      .right-column {
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+      }
+      .middle-column,
+      .right-column {
+        margin-top: 30px;
+      }
+      .running-time-group {
+        align-self: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Judul -->
+  <div style="text-align: center;">
+    <h1>Face Recognition</h1>
+  </div>
+
+  <!-- Kontainer utama -->
+  <div class="main-container">
+
+    <!-- KIRI: Form Upload + Hasil teks -->
+    <div class="left-column">
+      <form action="/recognize" method="post" enctype="multipart/form-data">
+        <!-- Input ZIP dataset -->
+        <div class="form-group">
+          <label for="dataset-zip">Insert Your Dataset (ZIP)</label>
+          <input type="file" id="dataset-zip" name="dataset_zip" accept=".zip" required />
+        </div>
+
+        <!-- Input gambar -->
+        <div class="form-group">
+          <label for="image-input">Insert Your Image</label>
+          <input type="file" id="image-input" name="image_input" accept="image/*" required />
+        </div>
+
+        <!-- Tombol submit -->
+        <button type="submit" style="
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #1d8cf8;
+            color: #fff;
+            border-radius: 24px;
+            cursor: pointer;
+          ">
+          Run Recognition
+        </button>
+      </form>
+
+      <!-- Result (teks nama file matched) -->
+      <div class="result-group">
+        <label>Result</label>
+        <div class="result-value">
+          {% if matched_label is defined %}
+            {{ matched_label }}
+          {% else %}
+            None
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TENGAH: Test Images + Running Time -->
+    <div class="middle-column">
+      <div class="column-title">Test Images</div>
+      <div class="placeholder-box" id="input-placeholder">
+        {% if input_image_url is defined %}
+          <img src="{{ input_image_url }}" alt="Input Image"/>
+        {% endif %}
+      </div>
+
+      <div class="running-time-group">
+        <label>Running Time</label>
+        <div class="time-value">
+          {% if running_time is defined %}
+            {{ "%.2f"|format(running_time) }}
+          {% else %}
+            00.00
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- KANAN: Closest Result -->
+    <div class="right-column">
+      <div class="column-title">Closest Result</div>
+      <div class="placeholder-box" id="match-placeholder">
+        {% if matched_image_url is defined %}
+          <img src="{{ matched_image_url }}" alt="Matched Image"/>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
